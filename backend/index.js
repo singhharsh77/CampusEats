@@ -1,7 +1,19 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
-const bodyParser = require('body-parser');
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import bodyParser from 'body-parser';
+import mongoose from 'mongoose';
+import Order from './models/Order.js';
+const Order = require('./models/Order.js');
+
+dotenv.config();
+
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI, {
+  dbName: process.env.DB_NAME
+})
+.then(() => console.log('✅ MongoDB connected successfully'))
+.catch(err => console.error('❌ MongoDB connection error:', err));
 
 // Initialize Express app
 const app = express();
@@ -12,14 +24,28 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Test route
+// Routes
 app.get('/', (req, res) => {
   res.send('CAMPUSEATS Backend is running!');
 });
 
-// Example: simple orders route
-app.get('/orders', (req, res) => {
-  res.json({ message: 'Orders route works!' });
+app.post('/orders', async (req, res) => {
+  try {
+    const order = new Order(req.body);
+    await order.save();
+    res.json(order);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/orders', async (req, res) => {
+  try {
+    const orders = await Order.find();
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Start server

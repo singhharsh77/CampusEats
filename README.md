@@ -51,7 +51,7 @@ During lunch breaks, college canteens get chaotic:
 **2. Backend**  
 - Node.js + NestJS / Express (TypeScript) for APIs.  
 - Firebase Auth / Auth0 / Cognito for authentication.  
-- PostgreSQL (+ Redis for caching/queues).  
+- Supabase 
 - Razorpay / Stripe for payments.  
 - Firebase Cloud Messaging (FCM) for notifications.
 

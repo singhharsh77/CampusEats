@@ -119,7 +119,7 @@ During lunch breaks, college canteens get chaotic:
    ```bash
    npm start
 
-## 🚦 API Routes**
+## 🚦 API Routes
 
 ### 🧑‍💻 A. Auth Routes (`/api/auth`)
 

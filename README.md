@@ -119,4 +119,47 @@ During lunch breaks, college canteens get chaotic:
    ```bash
    npm start
 
+## 🚦 **6. API Routes**
+
+### 🧑‍💻 A. Auth Routes (`/api/auth`)
+
+| Method | Endpoint     | Auth | Description          |
+|:-------|:--------------|:-----|:--------------------|
+| **POST** | `/register` | ❌ No  | Register new user |
+| **POST** | `/login` | ❌ No  | Login user |
+| **GET** | `/profile` | ✅ Yes | Get user profile |
+
+---
+
+### 🏪 B. Vendor Routes (`/api/vendors`)
+
+| Method | Endpoint     | Auth | Role | Description          |
+|:-------|:--------------|:-----|:------|:--------------------|
+| **POST** | `/` | ✅ Yes | Vendor | Create vendor |
+| **GET** | `/` | ❌ No | - | Get all vendors |
+| **GET** | `/:id` | ❌ No | - | Get vendor by ID |
+| **PUT** | `/:id` | ✅ Yes | Vendor | Update vendor |
+
+---
+
+### 🍔 C. Menu Routes (`/api/menu`)
+
+| Method | Endpoint     | Auth | Role | Description          |
+|:-------|:--------------|:-----|:------|:--------------------|
+| **POST** | `/` | ✅ Yes | Vendor | Create menu item |
+| **GET** | `/vendor/:vendorId` | ❌ No | - | Get vendor's menu |
+| **PUT** | `/:id` | ✅ Yes | Vendor | Update menu item |
+| **DELETE** | `/:id` | ✅ Yes | Vendor | Delete menu item |
+
+---
+
+### 🧾 D. Order Routes (`/api/orders`)
+
+| Method | Endpoint     | Auth | Role | Description          |
+|:-------|:--------------|:-----|:------|:--------------------|
+| **POST** | `/` | ✅ Yes | Student | Create order |
+| **GET** | `/my-orders` | ✅ Yes | Student | Get my orders |
+| **GET** | `/:id` | ✅ Yes | Any | Get order by ID |
+| **GET** | `/vendor/:vendorId` | ✅ Yes | Vendor | Get vendor orders |
+| **PUT** | `/:id/status` | ✅ Yes | Vendor | Update order status |
 

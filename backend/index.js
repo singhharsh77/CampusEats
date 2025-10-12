@@ -1,10 +1,14 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import bodyParser from 'body-parser';
-import mongoose from 'mongoose';
-import Order from './models/Order.js';
-const Order = require('./models/Order.js');
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+
+// Import routes
+const authRoutes = require('./routes/auth');
+const vendorRoutes = require('./routes/vendors');
+const menuRoutes = require('./routes/menu');
+const orderRoutes = require('./routes/orders');
 
 dotenv.config();
 
@@ -26,29 +30,22 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Routes
 app.get('/', (req, res) => {
-  res.send('CAMPUSEATS Backend is running!');
+  res.send('🍔 CAMPUSEATS Backend is running!');
 });
 
-app.post('/orders', async (req, res) => {
-  try {
-    const order = new Order(req.body);
-    await order.save();
-    res.json(order);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/vendors', vendorRoutes);
+app.use('/api/menu', menuRoutes);
+app.use('/api/orders', orderRoutes);
 
-app.get('/orders', async (req, res) => {
-  try {
-    const orders = await Order.find();
-    res.json(orders);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went wrong!' });
 });
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });

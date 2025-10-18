@@ -24,7 +24,11 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors());
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://effective-space-waddle-pvx5qg44rxjh7rpj-5173.app.github.dev',
+  'https://quiet-dog-1234.loca.lt' // 👈 add your tunnel URL
+];
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 

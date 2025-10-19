@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = '/api'; // Use relative path, Vite proxy will handle it
+const API_URL = '/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -20,27 +20,36 @@ api.interceptors.request.use((config) => {
 
 // Auth APIs
 export const authAPI = {
-  register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
   getProfile: () => api.get('/auth/profile'),
 };
 
 // Vendor APIs
 export const vendorAPI = {
-  getAll: () => api.get('/vendors'),
+  create: (data) => api.post('/vendors', data),
+  getMyVendor: () => api.get('/vendors/my-vendor'), // Make sure this exists
   getById: (id) => api.get(`/vendors/${id}`),
+  update: (id, data) => api.put(`/vendors/${id}`, data),
 };
 
 // Menu APIs
 export const menuAPI = {
+  create: (data) => api.post('/menu', data),
   getByVendor: (vendorId) => api.get(`/menu/vendor/${vendorId}`),
+  update: (id, data) => api.put(`/menu/${id}`, data),
+  delete: (id) => api.delete(`/menu/${id}`),
 };
 
 // Order APIs
 export const orderAPI = {
-  create: (data) => api.post('/orders', data),
-  getMyOrders: () => api.get('/orders/my-orders'),
+  getVendorOrders: (vendorId, status) => {
+    const url = status 
+      ? `/orders/vendor/${vendorId}?status=${status}`
+      : `/orders/vendor/${vendorId}`;
+    return api.get(url);
+  },
   getById: (id) => api.get(`/orders/${id}`),
+  updateStatus: (id, status) => api.put(`/orders/${id}/status`, { status }),
 };
 
 export default api;

@@ -57,4 +57,18 @@ const updateVendor = async (req, res) => {
   }
 };
 
-module.exports = { createVendor, getAllVendors, getVendorById, updateVendor };
+// Add this new function
+const getVendorByUserId = async (req, res) => {
+  try {
+    const vendor = await Vendor.findOne({ userId: req.userId });
+    if (!vendor) {
+      return res.status(404).json({ error: 'Vendor profile not found' });
+    }
+    res.json(vendor);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Update exports
+module.exports = { createVendor, getAllVendors, getVendorById, updateVendor,getVendorByUserId };

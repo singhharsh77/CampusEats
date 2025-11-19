@@ -64,15 +64,17 @@ const Navbar = () => {
                   {user?.name}
                 </span>
                 <span className="text-xs text-gray-500">{user?.email}</span>
-              </div>
-
-              <button
+                
+                <button
                 onClick={handleLogout}
                 className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition"
               >
                 <LogOut className="w-4 h-4" />
                 <span className="hidden md:inline">Logout</span>
               </button>
+              </div>
+
+              
             </div>
           </div>
         </div>

@@ -9,6 +9,7 @@ const authRoutes = require('./routes/auth');
 const vendorRoutes = require('./routes/vendors');
 const menuRoutes = require('./routes/menu');
 const orderRoutes = require('./routes/orders');
+const adminRoutes = require('./routes/admin');
 
 dotenv.config();
 
@@ -61,6 +62,8 @@ app.use('/api/auth', strictLimiter, authRoutes); // Strict limit for auth
 app.use('/api/vendors', vendorRoutes);
 app.use('/api/menu', menuRoutes);
 app.use('/api/orders', strictLimiter, orderRoutes); // Strict limit for orders
+app.use('/api/admin', adminRoutes); // Admin routes with built-in auth
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {

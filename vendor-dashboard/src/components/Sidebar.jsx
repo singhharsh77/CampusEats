@@ -54,10 +54,9 @@ const Sidebar = () => {
                 <NavLink
                   to={item.path}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                      isActive
-                        ? 'bg-white text-orange-600 font-semibold'
-                        : 'text-white hover:bg-orange-400'
+                    `flex items-center gap-3 px-4 py-3 rounded-lg transition ${isActive
+                      ? 'bg-white text-orange-600 font-semibold'
+                      : 'text-white hover:bg-orange-400'
                     }`
                   }
                 >

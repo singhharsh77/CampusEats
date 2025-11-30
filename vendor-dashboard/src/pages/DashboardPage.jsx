@@ -23,13 +23,33 @@ const DashboardPage = () => {
 
   const fetchDashboardData = async () => {
     try {
+      let currentVendorId = vendor?._id;
+
+      if (!currentVendorId) {
+        try {
+          const vendorResponse = await import('../services/api').then(m => m.vendorAPI.getMyVendor());
+          const vendorData = vendorResponse.data;
+          useAuthStore.getState().setVendor(vendorData);
+          currentVendorId = vendorData._id;
+        } catch (err) {
+          console.error('Failed to fetch vendor profile:', err);
+          setLoading(false);
+          return;
+        }
+      }
+
+      if (!currentVendorId) {
+        setLoading(false);
+        return;
+      }
+
       // Fetch all orders for vendor
-      const response = await orderAPI.getVendorOrders(vendor._id);
+      const response = await orderAPI.getVendorOrders(currentVendorId);
       const orders = response.data;
 
       // Calculate stats
       const today = new Date().setHours(0, 0, 0, 0);
-      
+
       const todayOrders = orders.filter(
         (order) => new Date(order.createdAt).setHours(0, 0, 0, 0) === today
       );
@@ -126,7 +146,7 @@ const DashboardPage = () => {
       {/* Recent Orders */}
       <div className="bg-white rounded-xl shadow-md p-6">
         <h2 className="text-xl font-bold text-gray-800 mb-4">Recent Orders</h2>
-        
+
         {recentOrders.length === 0 ? (
           <div className="text-center py-8">
             <Package className="w-16 h-16 text-gray-300 mx-auto mb-3" />
@@ -150,15 +170,14 @@ const DashboardPage = () => {
                 <div className="text-right">
                   <p className="font-bold text-gray-800">₹{order.totalAmount}</p>
                   <span
-                    className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
-                      order.status === 'pending'
+                    className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${order.status === 'pending'
                         ? 'bg-yellow-100 text-yellow-800'
                         : order.status === 'preparing'
-                        ? 'bg-orange-100 text-orange-800'
-                        : order.status === 'ready'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}
+                          ? 'bg-orange-100 text-orange-800'
+                          : order.status === 'ready'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-gray-100 text-gray-800'
+                      }`}
                   >
                     {order.status}
                   </span>

@@ -1,165 +1,195 @@
-# 🍴 College Canteen Ordering System
+# 🍔 CampusEats - Campus Food Ordering Platform
 
-A **college-only food ordering platform** to streamline lunch ordering, reduce queues, and simplify payments. Think of it as a **micro-Zomato/Swiggy for your campus**.
+A modern, full-stack food ordering platform designed for campus environments, featuring separate interfaces for vendors and students.
 
----
+## ✨ Features
 
-## 🎯 Problem Statement
+### For Vendors 🏪
+- **Real-time Order Management** - Live order dashboard with auto-refresh
+- **Audio Notifications** - Voice alerts for new orders
+- **Swipe Gestures** - Quick order status updates with touch-friendly controls
+- **Menu Management** - Easy add/edit/delete menu items
+- **Order History** - Track completed and cancelled orders
+- **Auto-complete** - Orders automatically move to history after 10 minutes
 
-During lunch breaks, college canteens get chaotic:
-
-- Long queues waste students’ time.
-- Miscommunication between vendors and students.
-- Payment confusion (paid but didn’t get food, or got food without paying).
-
-**Goal:** Build a system where:
-
-1. Students order & pay online.
-2. Vendors receive incoming orders and update status.
-3. Students get notified when food is ready for pickup.
-
----
-
-## 🔑 Core Features
-
-### Student App
-- Login via college email/ID.
-- Browse menu & place orders.
-- Online payment (UPI, wallet, or in-app credits).
-- Notifications for:
-  - Order Placed
-  - Order Being Prepared
-  - Order Ready
-
-### Vendor Dashboard
-- New orders queue.
-- Update order status: Pending → Preparing → Ready.
-- Payment verification (cash-free workflow).
-
-### Admin (Optional)
-- Add/remove vendors & manage menus.
-- Analytics: daily orders, revenue, popular items.
-
----
-
-## 🏗️ Architecture
-
-**1. Frontend**  
-- React (Web) / React Native (Mobile) for students.  
-- Web dashboard for vendors.
-
-**2. Backend**  
-- Node.js + NestJS / Express (TypeScript) for APIs.  
-- Firebase Auth / Auth0 / Cognito for authentication.  
-- Supabase 
-- Razorpay / Stripe for payments.  
-- Firebase Cloud Messaging (FCM) for notifications.
-
-**3. Event-Driven Flow**
-1. Student places order → Event published to `Orders` queue.
-2. Payment confirmation triggers `Order Placed`.
-3. Vendor dashboard subscribes → sees new orders.
-4. Vendor updates status → triggers notification → student notified.
-
----
-
-## ⚡ Workflow Example
-
-1. Student orders “Paneer Roll” at 12:10 PM.
-2. Payment successful → Vendor dashboard shows new order.
-3. Vendor marks **Preparing → Ready**.
-4. Student receives push notification:  
-   *"Your Paneer Roll is ready! Collect it from Counter 2."*
-5. Student shows QR code → vendor confirms delivery.
-![Alt text](assets/workflow.png)
----
+### For Students 🎓
+- **Browse Vendors** - View all active campus vendors
+- **Menu Browsing** - See available items with prices
+- **Quick Ordering** - Simple cart and checkout
+- **Order Tracking** - Real-time order status updates
+- **Order History** - View past orders
 
 ## 🛠️ Tech Stack
 
-| Layer          | Technology                                     | Purpose/Benefit |
-|----------------|-----------------------------------------------|----------------|
-| Frontend       | React / React Native                           | Web & mobile apps |
-| Backend        | Node.js + NestJS / Express + TypeScript       | Scalable APIs |
-| Database       | PostgreSQL (+ Redis optional)                  | Orders, users, menu storage |
-| Auth           | Firebase Auth / Auth0 / Cognito               | Secure college login |
-| Payments       | Razorpay / Stripe                             | Cashless payments |
-| Notifications  | Firebase Cloud Messaging (FCM)                | Real-time push notifications |
-| Hosting/Cloud  | AWS Lambda / S3 / Firebase                     | Serverless, low-cost deployment |
-| CI/CD          | GitHub Actions                                | Automate build & deploy |
+### Frontend
+- **React** - UI framework
+- **Vite** - Build tool
+- **Zustand** - State management
+- **Framer Motion** - Animations and gestures
+- **Axios** - HTTP client
+- **React Hot Toast** - Notifications
+- **Lucide React** - Icons
 
----
+### Backend
+- **Node.js** - Runtime
+- **Express** - Web framework
+- **MongoDB** - Database
+- **Mongoose** - ODM
+- **JWT** - Authentication
+- **Express Rate Limit** - DoS protection
 
-## 🚀 Future Enhancements
-- Pre-ordering & scheduled meals.
-- Loyalty points, discounts, and coupons.
-- AI-based demand prediction for vendors.
-- Integration with hostel mess / multiple canteens.
-- Analytics dashboards for admins.
+## 📁 Project Structure
 
----
+```
+CampusEats/
+├── backend/              # Express API server
+│   ├── controllers/      # Route controllers
+│   ├── models/          # Mongoose models
+│   ├── routes/          # API routes
+│   ├── middleware/      # Custom middleware
+│   └── index.js         # Entry point
+├── vendor-dashboard/    # Vendor React app
+│   └── src/
+│       ├── components/  # Reusable components
+│       ├── pages/       # Page components
+│       ├── services/    # API services
+│       └── store/       # Zustand stores
+└── student-app/         # Student React app
+    └── src/
+        ├── components/
+        ├── pages/
+        ├── services/
+        └── store/
+```
 
-## 💻 Installation (MVP Version)
+## 🚀 Quick Start
 
-1. ## Clone the repo:  
-   ```bash
-   git clone https://github.com/<username>/college-canteen-app.git
-2. ## Install Frontend Dependencies
-   ```bash
-   cd frontend
-   npm install
-3. ## Configure Environment Variables
-   ```bash
-   DATABASE_URL → PostgreSQL connection URL
-   RAZORPAY_KEY_ID & RAZORPAY_KEY_SECRET → Razorpay credentials
-   FIREBASE_CONFIG → Firebase configuration for FCM & Auth
-4. ## Run Backend
-   ```bash
-   npm run start:dev
-5. ## Run Frontend
-   ```bash
-   npm start
+### Prerequisites
+- Node.js 18+
+- MongoDB Atlas account
+- npm or yarn
 
-## 🚦 API Routes
+### Installation
 
-### 🧑‍💻 A. Auth Routes (`/api/auth`)
+1. **Clone the repository**
+```bash
+git clone https://github.com/YOUR_USERNAME/CampusEats.git
+cd CampusEats
+```
 
-| Method | Endpoint     | Auth | Description          |
-|:-------|:--------------|:-----|:--------------------|
-| **POST** | `/register` | ❌ No  | Register new user |
-| **POST** | `/login` | ❌ No  | Login user |
-| **GET** | `/profile` | ✅ Yes | Get user profile |
+2. **Setup Backend**
+```bash
+cd backend
+npm install
+cp .env.example .env
+# Edit .env with your MongoDB URI
+npm run dev
+```
 
----
+3. **Setup Vendor Dashboard**
+```bash
+cd vendor-dashboard
+npm install
+npm run dev
+```
 
-### 🏪 B. Vendor Routes (`/api/vendors`)
+4. **Setup Student App**
+```bash
+cd student-app
+npm install
+npm run dev
+```
 
-| Method | Endpoint     | Auth | Role | Description          |
-|:-------|:--------------|:-----|:------|:--------------------|
-| **POST** | `/` | ✅ Yes | Vendor | Create vendor |
-| **GET** | `/` | ❌ No | - | Get all vendors |
-| **GET** | `/:id` | ❌ No | - | Get vendor by ID |
-| **PUT** | `/:id` | ✅ Yes | Vendor | Update vendor |
+### Environment Variables
 
----
+Create `.env` in `backend/`:
+```env
+MONGO_URI=your_mongodb_connection_string
+DB_NAME=campuseats
+PORT=5001
+JWT_SECRET=your_secret_key
+```
 
-### 🍔 C. Menu Routes (`/api/menu`)
+## 🎯 Usage
 
-| Method | Endpoint     | Auth | Role | Description          |
-|:-------|:--------------|:-----|:------|:--------------------|
-| **POST** | `/` | ✅ Yes | Vendor | Create menu item |
-| **GET** | `/vendor/:vendorId` | ❌ No | - | Get vendor's menu |
-| **PUT** | `/:id` | ✅ Yes | Vendor | Update menu item |
-| **DELETE** | `/:id` | ✅ Yes | Vendor | Delete menu item |
+1. **Vendor Dashboard**: http://localhost:5174
+2. **Student App**: http://localhost:5173
+3. **Backend API**: http://localhost:5001
 
----
+## 🔒 Security Features
 
-### 🧾 D. Order Routes (`/api/orders`)
+- ✅ JWT Authentication
+- ✅ Rate Limiting (1000 req/15min)
+- ✅ CORS Protection
+- ✅ Input Validation
+- ✅ Password Hashing (bcrypt)
 
-| Method | Endpoint     | Auth | Role | Description          |
-|:-------|:--------------|:-----|:------|:--------------------|
-| **POST** | `/` | ✅ Yes | Student | Create order |
-| **GET** | `/my-orders` | ✅ Yes | Student | Get my orders |
-| **GET** | `/:id` | ✅ Yes | Any | Get order by ID |
-| **GET** | `/vendor/:vendorId` | ✅ Yes | Vendor | Get vendor orders |
-| **PUT** | `/:id/status` | ✅ Yes | Vendor | Update order status |
+## 🎨 UI Features
 
+- **Responsive Design** - Works on mobile and desktop
+- **Touch Gestures** - Swipe to update order status
+- **Real-time Updates** - Auto-refresh every 5 seconds
+- **Audio Notifications** - Browser speech synthesis
+- **Horizontal Scrolling** - Smooth card navigation
+- **Custom Styling** - Black borders, rounded corners, premium shadows
+
+## 📱 Mobile Support
+
+- Touch-friendly swipe gestures
+- Responsive grid layouts
+- Mobile-optimized UI components
+- Works on all modern browsers
+
+## 🤖 Automation
+
+- **Auto-complete Service** - Runs every 5 minutes
+- **Order Cleanup** - Completes orders older than 10 minutes
+- **MongoDB Auto-reconnect** - Handles connection drops
+
+## 📊 API Endpoints
+
+### Authentication
+- `POST /api/auth/register` - Register user
+- `POST /api/auth/login` - Login user
+
+### Vendors
+- `GET /api/vendors` - Get all active vendors
+- `GET /api/vendors/:id` - Get vendor by ID
+- `PUT /api/vendors/:id` - Update vendor
+
+### Menu
+- `GET /api/menu/vendor/:vendorId` - Get vendor menu
+- `POST /api/menu` - Add menu item
+- `PUT /api/menu/:id` - Update menu item
+- `DELETE /api/menu/:id` - Delete menu item
+
+### Orders
+- `GET /api/orders/vendor/:vendorId` - Get vendor orders
+- `POST /api/orders` - Create order
+- `PUT /api/orders/:id` - Update order status
+
+## 🐛 Known Issues
+
+- Backend sleeps on free tier (Render) after 15 mins inactivity
+- First request after sleep takes ~30s (cold start)
+
+## 🚀 Deployment
+
+See [deployment_guide.md](deployment_guide.md) for detailed instructions on deploying to:
+- **Backend**: Render (free)
+- **Frontend**: Vercel (free)
+- **Database**: MongoDB Atlas (free)
+
+## 📝 License
+
+MIT
+
+## 👨‍💻 Author
+
+Harsh Singh
+
+## 🙏 Acknowledgments
+
+- Built with ❤️ for campus communities
+- Inspired by modern food delivery platforms
+- Designed for simplicity and efficiency

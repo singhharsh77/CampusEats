@@ -27,7 +27,23 @@ const MenuPage = () => {
 
   const fetchMenu = async () => {
     try {
-      const response = await menuAPI.getByVendor(vendor._id);
+      let currentVendorId = vendor?._id;
+
+      if (!currentVendorId) {
+        try {
+          const vendorResponse = await import('../services/api').then(m => m.vendorAPI.getMyVendor());
+          const vendorData = vendorResponse.data;
+          useAuthStore.getState().setVendor(vendorData);
+          currentVendorId = vendorData._id;
+        } catch (err) {
+          console.error('Failed to fetch vendor profile:', err);
+          return;
+        }
+      }
+
+      if (!currentVendorId) return;
+
+      const response = await menuAPI.getByVendor(currentVendorId);
       setMenuItems(response.data);
     } catch (error) {
       toast.error('Failed to load menu');
@@ -141,9 +157,8 @@ const MenuPage = () => {
           {menuItems.map((item) => (
             <div
               key={item._id}
-              className={`bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition ${
-                !item.isAvailable ? 'opacity-60' : ''
-              }`}
+              className={`bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition ${!item.isAvailable ? 'opacity-60' : ''
+                }`}
             >
               <div className="h-32 bg-gradient-to-br from-orange-200 to-red-200 flex items-center justify-center">
                 {item.imageUrl ? (
@@ -166,11 +181,10 @@ const MenuPage = () => {
                     </p>
                   </div>
                   <span
-                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      item.isAvailable
+                    className={`px-2 py-1 rounded-full text-xs font-semibold ${item.isAvailable
                         ? 'bg-green-100 text-green-800'
                         : 'bg-red-100 text-red-800'
-                    }`}
+                      }`}
                   >
                     {item.isAvailable ? 'Available' : 'Unavailable'}
                   </span>

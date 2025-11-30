@@ -104,7 +104,7 @@ const LoginPage = () => {
 
                 {/* Footer */}
                 <p className="text-center text-gray-600 mt-6">
-                    CampusEats Admin Panel © 2024
+                    CampusEats Admin Panel © 2025
                 </p>
             </div>
         </div>

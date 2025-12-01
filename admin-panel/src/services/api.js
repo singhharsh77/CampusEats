@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Use relative path to leverage Vite proxy (works in Codespaces & Local)
-const API_BASE_URL = '';
+// Use environment variable for production, or relative path for local proxy
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 const api = axios.create({
     baseURL: `${API_BASE_URL}/api`,

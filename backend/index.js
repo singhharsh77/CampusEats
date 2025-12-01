@@ -10,6 +10,7 @@ const vendorRoutes = require('./routes/vendors');
 const menuRoutes = require('./routes/menu');
 const orderRoutes = require('./routes/orders');
 const adminRoutes = require('./routes/admin');
+const startAutoCompleteService = require('./autoCompleteService');
 
 dotenv.config();
 
@@ -21,7 +22,11 @@ mongoose.connect(process.env.MONGO_URI, {
   maxPoolSize: 10,
   minPoolSize: 2,
 })
-  .then(() => console.log('✅ MongoDB connected successfully'))
+  .then(() => {
+    console.log('✅ MongoDB connected successfully');
+    // Start auto-complete service after DB connection
+    startAutoCompleteService();
+  })
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // Handle MongoDB connection events

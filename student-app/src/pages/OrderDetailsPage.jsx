@@ -59,6 +59,8 @@ const OrderDetailsPage = () => {
       if (audioEnabledRef.current) {
         if (order.status === 'confirmed') {
           speakMessage('Your order has been confirmed');
+        } else if (order.status === 'preparing') {
+          speakMessage('Your food is being prepared');
         } else if (order.status === 'ready') {
           speakOrderReady(order);
         }
@@ -74,7 +76,7 @@ const OrderDetailsPage = () => {
       audioRef.current.currentTime = 0;
       audioRef.current.play().catch(e => {
         console.error('Audio play failed:', e);
-        toast.error('Tap "Test Audio" to unlock sound');
+        toast.error('Tap anywhere to enable audio');
       });
     } catch (error) {
       console.error('Audio error:', error);

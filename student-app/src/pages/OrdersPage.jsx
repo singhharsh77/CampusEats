@@ -2,7 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { orderAPI } from '../services/api';
 import toast from 'react-hot-toast';
-import { Package, Clock, CheckCircle, XCircle, Volume2, VolumeX } from 'lucide-react';
+import { Package, Clock, CheckCircle, XCircle, Volume2, VolumeX, Play } from 'lucide-react';
+import { NOTIFICATION_SOUND } from '../constants/audio';
 
 const OrdersPage = () => {
   const [orders, setOrders] = useState([]);
@@ -12,6 +13,7 @@ const OrdersPage = () => {
   // Tracking refs
   const audioEnabledRef = useRef(false);
   const prevOrdersRef = useRef([]);
+  const audioRef = useRef(new Audio(NOTIFICATION_SOUND));
 
   useEffect(() => {
     fetchOrders();
@@ -31,14 +33,26 @@ const OrdersPage = () => {
     audioEnabledRef.current = audioEnabled;
   }, [audioEnabled]);
 
+  const playNotificationSound = () => {
+    try {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(e => {
+        console.error('Audio play failed:', e);
+        toast.error('Tap "Test Audio" to unlock sound');
+      });
+    } catch (error) {
+      console.error('Audio error:', error);
+    }
+  };
+
   const toggleAudio = () => {
     const newAudioState = !audioEnabled;
     setAudioEnabled(newAudioState);
     localStorage.setItem('studentAudioEnabled', newAudioState.toString());
 
     if (newAudioState) {
-      const utterance = new SpeechSynthesisUtterance('Audio notifications enabled');
-      window.speechSynthesis.speak(utterance);
+      // Play to unlock audio context
+      playNotificationSound();
       toast.success('Audio notifications enabled');
     } else {
       toast.success('Audio notifications disabled');
@@ -74,6 +88,9 @@ const OrdersPage = () => {
   };
 
   const speakStatusUpdate = (order) => {
+    // Play sound first
+    playNotificationSound();
+
     if (!window.speechSynthesis) return;
 
     let text = '';
@@ -148,6 +165,15 @@ const OrdersPage = () => {
           >
             {audioEnabled ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
           </button>
+
+          {audioEnabled && (
+            <button
+              onClick={playNotificationSound}
+              className="flex items-center gap-1 text-xs bg-orange-100 text-orange-600 px-3 py-1 rounded-full hover:bg-orange-200 ml-2"
+            >
+              <Play className="w-4 h-4" /> Test
+            </button>
+          )}
         </div>
 
         <div className="space-y-4">

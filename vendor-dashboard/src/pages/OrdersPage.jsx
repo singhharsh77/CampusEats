@@ -90,7 +90,20 @@ const OrdersPage = () => {
 
           if (audioEnabledRef.current) {
             console.log('🔊 Playing audio for new orders');
-            newConfirmedOrders.forEach(order => speakOrder(order));
+
+            // 1. Play Chime ONCE
+            playNotificationSound();
+
+            // 2. Speak Summary ONCE (prevents overlap/cancellation loops)
+            if (window.speechSynthesis) {
+              const text = newConfirmedOrders.length === 1
+                ? `New order ${newConfirmedOrders[0].orderNumber} received`
+                : `${newConfirmedOrders.length} new orders received`;
+
+              const utterance = new SpeechSynthesisUtterance(text);
+              window.speechSynthesis.cancel(); // Stop unexpected overlaps This ensures clean speech
+              window.speechSynthesis.speak(utterance);
+            }
           } else {
             console.log('🔇 Audio is disabled - click the speaker icon to enable');
           }
@@ -204,14 +217,22 @@ const OrdersPage = () => {
             {audioEnabled ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
           </button>
 
-          {audioEnabled && (
-            <button
-              onClick={playNotificationSound}
-              className="flex items-center gap-1 text-xs bg-orange-100 text-orange-600 px-3 py-1 rounded-full hover:bg-orange-200"
-            >
-              <Play className="w-4 h-4" /> Test
-            </button>
-          )}
+          <button
+            onClick={() => {
+              if (!audioEnabled) {
+                toast.error('Enable audio first to test!');
+                return;
+              }
+              playNotificationSound();
+            }}
+            className={`flex items-center gap-1 text-xs px-3 py-1 rounded-full transition-colors ${audioEnabled
+                ? 'bg-orange-100 text-orange-600 hover:bg-orange-200'
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              }`}
+            title="Test Audio Sound"
+          >
+            <Play className="w-4 h-4" /> Test
+          </button>
 
           <button
             onClick={() => fetchOrders(true)}

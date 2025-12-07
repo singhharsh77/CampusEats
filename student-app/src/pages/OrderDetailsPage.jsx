@@ -101,7 +101,7 @@ const OrderDetailsPage = () => {
     if (!window.speechSynthesis) return;
 
     const itemNames = order.items.map(i => `${i.quantity} ${i.name}`).join(', ');
-    const text = `Your order for ${itemNames} is ready. Kindly receive it from the counter.`;
+    const text = `Your order at ${order.vendorId?.name} of ${itemNames} is ready to pickup. Please receive it from the counter.`;
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 1.0;

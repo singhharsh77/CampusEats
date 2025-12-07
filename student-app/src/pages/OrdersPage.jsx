@@ -96,7 +96,10 @@ const OrdersPage = () => {
     let text = '';
     if (order.status === 'confirmed') text = `Your order has been confirmed.`;
     if (order.status === 'preparing') text = `Your order at ${order.vendorId?.name} is being prepared.`;
-    if (order.status === 'ready') text = `Your order at ${order.vendorId?.name} is ready for pickup!`;
+    if (order.status === 'ready') {
+      const itemNames = order.items.map(i => `${i.quantity} ${i.name}`).join(', ');
+      text = `Your order at ${order.vendorId?.name} of ${itemNames} is ready to pickup. Please receive it from the counter.`;
+    }
 
     if (text) {
       const utterance = new SpeechSynthesisUtterance(text);

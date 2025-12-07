@@ -96,9 +96,14 @@ const OrdersPage = () => {
 
             // 2. Speak Summary ONCE (prevents overlap/cancellation loops)
             if (window.speechSynthesis) {
-              const text = newConfirmedOrders.length === 1
-                ? `New order ${newConfirmedOrders[0].orderNumber} received`
-                : `${newConfirmedOrders.length} new orders received`;
+              let text;
+              if (newConfirmedOrders.length === 1) {
+                const order = newConfirmedOrders[0];
+                const itemsList = order.items.map(i => `${i.quantity} ${i.name}`).join(', ');
+                text = `New order received: ${itemsList}`;
+              } else {
+                text = `${newConfirmedOrders.length} new orders received`;
+              }
 
               const utterance = new SpeechSynthesisUtterance(text);
               window.speechSynthesis.cancel(); // Stop unexpected overlaps This ensures clean speech

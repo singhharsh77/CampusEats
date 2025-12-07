@@ -38,7 +38,7 @@ const OrdersPage = () => {
       audioRef.current.currentTime = 0;
       audioRef.current.play().catch(e => {
         console.error('Audio play failed:', e);
-        toast.error('Tap "Test Audio" to unlock sound');
+        toast.error('Tap the audio icon to enable sound');
       });
     } catch (error) {
       console.error('Audio error:', error);

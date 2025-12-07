@@ -63,10 +63,8 @@ app.listen(PORT, () => {
 // Connect to MongoDB asynchronously (in background)
 mongoose.connect(process.env.MONGO_URI, {
   dbName: process.env.DB_NAME,
-  serverSelectionTimeoutMS: 5000,
+  serverSelectionTimeoutMS: 30000, // Increase to 30s for cloud latency
   socketTimeoutMS: 45000,
-  maxPoolSize: 10,
-  minPoolSize: 2,
 })
   .then(() => {
     console.log('✅ MongoDB connected successfully');

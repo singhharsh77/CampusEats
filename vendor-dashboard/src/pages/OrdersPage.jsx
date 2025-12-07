@@ -5,7 +5,8 @@ import useAuthStore from '../store/authStore';
 import useOrdersStore from '../store/ordersStore';
 import OrderCard from '../components/OrderCard';
 import toast from 'react-hot-toast';
-import { RefreshCw, ShoppingBag, Volume2, VolumeX, Clock } from 'lucide-react';
+import { RefreshCw, ShoppingBag, Volume2, VolumeX, Clock, Play } from 'lucide-react';
+import { NOTIFICATION_SOUND } from '../constants/audio';
 
 const OrdersPage = () => {
   const { vendor } = useAuthStore();
@@ -23,6 +24,7 @@ const OrdersPage = () => {
   // Use ref to track current audio state (prevents stale closure)
   const audioEnabledRef = useRef(audioEnabled);
   const prevOrdersRef = useRef([]);
+  const audioRef = useRef(new Audio(NOTIFICATION_SOUND));
 
   // Update ref when state changes
   useEffect(() => {
@@ -108,11 +110,23 @@ const OrdersPage = () => {
     }
   };
 
-  const speakOrder = (order) => {
-    if (!window.speechSynthesis) {
-      console.warn('Speech synthesis not supported');
-      return;
+  const playNotificationSound = () => {
+    try {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(e => {
+        console.error('Audio play failed:', e);
+        toast.error('Tap "Test Audio" to unlock sound');
+      });
+    } catch (error) {
+      console.error('Audio error:', error);
     }
+  };
+
+  const speakOrder = (order) => {
+    // Play sound first
+    playNotificationSound();
+
+    if (!window.speechSynthesis) return;
 
     const text = `New order received. ${order.items.map(i => `${i.quantity} ${i.name}`).join(', ')}`;
     const utterance = new SpeechSynthesisUtterance(text);
@@ -136,9 +150,7 @@ const OrdersPage = () => {
 
     if (newAudioState) {
       // Test audio to initialize context
-      const testUtterance = new SpeechSynthesisUtterance('Audio notifications enabled');
-      testUtterance.volume = 0.5;
-      window.speechSynthesis.speak(testUtterance);
+      playNotificationSound();
       toast.success('Audio notifications enabled');
     } else {
       toast.success('Audio notifications disabled');
@@ -191,6 +203,15 @@ const OrdersPage = () => {
           >
             {audioEnabled ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
           </button>
+
+          {audioEnabled && (
+            <button
+              onClick={playNotificationSound}
+              className="flex items-center gap-1 text-xs bg-orange-100 text-orange-600 px-3 py-1 rounded-full hover:bg-orange-200"
+            >
+              <Play className="w-4 h-4" /> Test
+            </button>
+          )}
 
           <button
             onClick={() => fetchOrders(true)}

@@ -1,6 +1,14 @@
 import axios from 'axios';
 
-const API_URL = (import.meta.env.VITE_API_URL || '') + '/api';
+const getBaseUrl = () => {
+  let url = import.meta.env.VITE_API_URL || '';
+  if (url.endsWith('/api')) {
+    url = url.slice(0, -4);
+  }
+  return url + '/api';
+};
+
+const API_URL = getBaseUrl();
 
 const api = axios.create({
   baseURL: API_URL,
@@ -41,6 +49,7 @@ export const orderAPI = {
   create: (data) => api.post('/orders', data),
   getMyOrders: () => api.get('/orders/my-orders'),
   getById: (id) => api.get(`/orders/${id}`),
+  getLiveOrderCount: (vendorId) => api.get(`/orders/vendor/${vendorId}/live-count`),
 };
 
 export default api;

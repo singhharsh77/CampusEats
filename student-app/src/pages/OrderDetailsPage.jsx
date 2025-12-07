@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { orderAPI } from '../services/api';
 import { QRCodeSVG } from 'qrcode.react';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Clock, CheckCircle, Store, User } from 'lucide-react';
+import { ArrowLeft, Clock, CheckCircle, Store, User, Volume2, VolumeX, Play } from 'lucide-react';
+import { NOTIFICATION_SOUND } from '../constants/audio';
 
 const OrderDetailsPage = () => {
   const { orderId } = useParams();
@@ -11,9 +12,25 @@ const OrderDetailsPage = () => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Audio notification state
+  const [audioEnabled, setAudioEnabled] = useState(() => {
+    const saved = localStorage.getItem('studentAudioEnabled');
+    return saved !== 'false'; // Default to true
+  });
+
+  // Use ref to track current audio state (prevents stale closure)
+  const audioEnabledRef = useRef(audioEnabled);
+  const prevStatusRef = useRef(null);
+  const audioRef = useRef(new Audio(NOTIFICATION_SOUND));
+
+  // Update ref when state changes
+  useEffect(() => {
+    audioEnabledRef.current = audioEnabled;
+  }, [audioEnabled]);
+
   useEffect(() => {
     fetchOrder();
-    
+
     // Poll for order updates every 10 seconds
     const interval = setInterval(fetchOrder, 10000);
     return () => clearInterval(interval);
@@ -30,10 +47,90 @@ const OrderDetailsPage = () => {
     }
   };
 
+
+  // Check for status changes to play audio
+  useEffect(() => {
+    if (!order) return;
+
+    // Track status changes
+    if (prevStatusRef.current && prevStatusRef.current !== order.status) {
+      console.log(`🔄 Status changed: ${prevStatusRef.current} -> ${order.status}`);
+
+      if (audioEnabledRef.current) {
+        if (order.status === 'confirmed') {
+          speakMessage('Your order has been confirmed');
+        } else if (order.status === 'ready') {
+          speakOrderReady(order);
+        }
+      }
+    }
+
+    // Update ref
+    prevStatusRef.current = order.status;
+  }, [order]);
+
+  const playNotificationSound = () => {
+    try {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(e => {
+        console.error('Audio play failed:', e);
+        toast.error('Tap "Test Audio" to unlock sound');
+      });
+    } catch (error) {
+      console.error('Audio error:', error);
+    }
+  };
+
+  const speakMessage = (text) => {
+    // Play sound first (more reliable on mobile)
+    playNotificationSound();
+
+    if (!window.speechSynthesis) return;
+    const utterance = new SpeechSynthesisUtterance(text);
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+    toast(`🔊 ${text}`, { icon: '🔔' });
+  };
+
+  const speakOrderReady = (order) => {
+    // Play sound first
+    playNotificationSound();
+
+    if (!window.speechSynthesis) return;
+
+    const itemNames = order.items.map(i => `${i.quantity} ${i.name}`).join(', ');
+    const text = `Your order for ${itemNames} is ready. Kindly receive it from the counter.`;
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+
+    // Speak the order
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const toggleAudio = () => {
+    const newAudioState = !audioEnabled;
+    setAudioEnabled(newAudioState);
+    localStorage.setItem('studentAudioEnabled', newAudioState.toString());
+
+    if (newAudioState) {
+      // Play to unlock audio context
+      playNotificationSound();
+      toast.success('Audio notifications enabled');
+    } else {
+      toast.success('Audio notifications disabled');
+    }
+  };
+
   const getStatusSteps = () => {
     const steps = ['pending', 'confirmed', 'preparing', 'ready', 'completed'];
     const currentIndex = steps.indexOf(order?.status);
-    
+
     return steps.map((step, index) => ({
       name: step.charAt(0).toUpperCase() + step.slice(1),
       completed: index <= currentIndex,
@@ -68,13 +165,15 @@ const OrderDetailsPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <button
-          onClick={() => navigate('/orders')}
-          className="flex items-center gap-2 text-gray-700 hover:text-orange-600 mb-6"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          Back to Orders
-        </button>
+        <div className="mb-6">
+          <button
+            onClick={() => navigate('/orders')}
+            className="flex items-center gap-2 text-gray-700 hover:text-orange-600"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Back to Orders
+          </button>
+        </div>
 
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
           <div className="flex items-center justify-between mb-6">
@@ -98,6 +197,16 @@ const OrderDetailsPage = () => {
                 Ready for Pickup!
               </div>
             )}
+
+            {/* Test Audio Button (only if audio enabled) */}
+            {audioEnabled && (
+              <button
+                onClick={playNotificationSound}
+                className="flex items-center gap-1 text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full hover:bg-orange-200"
+              >
+                <Play className="w-3 h-3" /> Test Audio
+              </button>
+            )}
           </div>
 
           {/* Status Timeline */}
@@ -115,11 +224,10 @@ const OrderDetailsPage = () => {
               {statusSteps.map((step, index) => (
                 <div key={index} className="flex flex-col items-center relative z-10">
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-all ${
-                      step.completed
-                        ? 'bg-orange-500 text-white'
-                        : 'bg-gray-200 text-gray-400'
-                    }`}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-all ${step.completed
+                      ? 'bg-orange-500 text-white'
+                      : 'bg-gray-200 text-gray-400'
+                      }`}
                   >
                     {step.completed ? (
                       <CheckCircle className="w-5 h-5" />
@@ -128,9 +236,8 @@ const OrderDetailsPage = () => {
                     )}
                   </div>
                   <span
-                    className={`text-xs font-medium ${
-                      step.active ? 'text-orange-600' : 'text-gray-600'
-                    }`}
+                    className={`text-xs font-medium ${step.active ? 'text-orange-600' : 'text-gray-600'
+                      }`}
                   >
                     {step.name}
                   </span>
@@ -151,6 +258,32 @@ const OrderDetailsPage = () => {
               </div>
             </div>
           </div>
+
+          {/* Queue Position */}
+          {order.queuePosition && (
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 mb-6 border border-blue-200">
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-500 p-2 rounded-full">
+                  <Clock className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 font-medium">Your Queue Position</p>
+                  <p className="text-2xl font-bold text-gray-800">
+                    {order.queuePosition === 1 ? (
+                      <span className="text-green-600">Next in line! 🎉</span>
+                    ) : (
+                      <span>
+                        Position #{order.queuePosition}
+                        <span className="text-base font-normal text-gray-600 ml-2">
+                          ({order.queuePosition - 1} {order.queuePosition - 1 === 1 ? 'order' : 'orders'} before you)
+                        </span>
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Order Items */}
           <div className="mb-6">
@@ -213,7 +346,7 @@ const OrderDetailsPage = () => {
         {(order.status === 'ready' || order.status === 'preparing') && order.qrCode && (
           <div className="bg-white rounded-xl shadow-lg p-6 text-center">
             <h3 className="text-xl font-bold text-gray-800 mb-4">
-              {order.status === 'ready' ? 'Show this QR Code at pickup' : 'Your Pickup QR Code'}
+              {order.status === 'ready' ? 'Show this QR Code at pickup (not in use)' : 'Your Pickup QR Code (not in use)'}
             </h3>
             <div className="flex justify-center mb-4">
               <div className="bg-white p-4 rounded-xl border-4 border-orange-500">

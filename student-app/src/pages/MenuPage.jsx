@@ -4,6 +4,7 @@ import { vendorAPI, menuAPI } from '../services/api';
 import useCartStore from '../store/cartStore';
 import toast from 'react-hot-toast';
 import { Plus, Clock, Star, ArrowLeft } from 'lucide-react';
+import LiveOrderQueue from '../components/LiveOrderQueue';
 
 const MenuPage = () => {
   const { vendorId } = useParams();
@@ -115,6 +116,11 @@ const MenuPage = () => {
         </div>
       </div>
 
+      {/* Live Order Queue */}
+      <div className="max-w-7xl mx-auto px-4 pt-6">
+        <LiveOrderQueue vendorId={vendorId} />
+      </div>
+
       {/* Category Filter */}
       <div className="bg-white border-b sticky top-16 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
@@ -123,11 +129,10 @@ const MenuPage = () => {
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-full font-medium whitespace-nowrap transition ${
-                  selectedCategory === category
-                    ? 'bg-orange-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                className={`px-4 py-2 rounded-full font-medium whitespace-nowrap transition ${selectedCategory === category
+                  ? 'bg-orange-500 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
               >
                 {category.charAt(0).toUpperCase() + category.slice(1)}
               </button>

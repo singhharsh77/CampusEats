@@ -33,8 +33,8 @@ const OrdersPage = () => {
     if (vendor) {
       fetchOrders(true); // Initial load
 
-      // Auto-refresh every 5 seconds
-      const interval = setInterval(() => fetchOrders(false), 5000);
+      // Auto-refresh every 10 seconds
+      const interval = setInterval(() => fetchOrders(false), 10000);
       return () => clearInterval(interval);
     }
   }, [vendor]); // Removed selectedStatus dependency as we fetch all
@@ -66,29 +66,29 @@ const OrdersPage = () => {
       const response = await orderAPI.getVendorOrders(currentVendorId);
       const allOrders = response.data;
 
-      // Audio Notification for New Pending Orders (only in live view)
+      // Audio Notification for New Confirmed Orders (only in live view)
       if (!showHistory) {
         const activeOrders = allOrders.filter(order =>
-          ['pending', 'confirmed', 'preparing', 'ready'].includes(order.status)
+          ['confirmed', 'preparing', 'ready'].includes(order.status)
         );
 
-        const newPendingOrders = activeOrders.filter(
-          n => n.status === 'pending' &&
+        const newConfirmedOrders = activeOrders.filter(
+          n => n.status === 'confirmed' &&
             !prevOrdersRef.current.find(p => p._id === n._id)
         );
 
         console.log('🔍 Audio Debug:', {
-          newPendingOrders: newPendingOrders.length,
+          newConfirmedOrders: newConfirmedOrders.length,
           audioEnabled: audioEnabledRef.current,
           showHistory
         });
 
-        if (newPendingOrders.length > 0) {
-          console.log('🆕 New orders detected:', newPendingOrders.map(o => o.orderNumber));
+        if (newConfirmedOrders.length > 0) {
+          console.log('🆕 New orders detected:', newConfirmedOrders.map(o => o.orderNumber));
 
           if (audioEnabledRef.current) {
             console.log('🔊 Playing audio for new orders');
-            newPendingOrders.forEach(order => speakOrder(order));
+            newConfirmedOrders.forEach(order => speakOrder(order));
           } else {
             console.log('🔇 Audio is disabled - click the speaker icon to enable');
           }
@@ -160,7 +160,7 @@ const OrdersPage = () => {
   // Filter orders based on view
   const displayedOrders = showHistory
     ? orders.filter(o => o.status === 'completed' || o.status === 'cancelled')
-    : orders.filter(o => ['pending', 'confirmed', 'preparing', 'ready'].includes(o.status));
+    : orders.filter(o => ['confirmed', 'preparing', 'ready'].includes(o.status));
 
   return (
     <div className="p-6 max-w-[1600px] mx-auto">

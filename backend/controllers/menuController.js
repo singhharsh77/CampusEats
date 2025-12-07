@@ -12,10 +12,16 @@ const createMenuItem = async (req, res) => {
 
 const getMenuByVendor = async (req, res) => {
   try {
-    const menuItems = await MenuItem.find({ 
-      vendorId: req.params.vendorId,
-      isAvailable: true 
-    });
+    const query = { vendorId: req.params.vendorId };
+
+    // Only filter by availability if includeUnavailable is NOT true
+    if (req.query.includeUnavailable !== 'true') {
+      query.isAvailable = true;
+    }
+
+    console.log(`🔍 Fetching menu for vendor: ${req.params.vendorId} (Include unavailable: ${req.query.includeUnavailable})`);
+    const menuItems = await MenuItem.find(query);
+    console.log(`✅ Found ${menuItems.length} menu items`);
     res.json(menuItems);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -29,11 +35,11 @@ const updateMenuItem = async (req, res) => {
       { ...req.body, updatedAt: Date.now() },
       { new: true }
     );
-    
+
     if (!menuItem) {
       return res.status(404).json({ error: 'Menu item not found' });
     }
-    
+
     res.json(menuItem);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -43,11 +49,11 @@ const updateMenuItem = async (req, res) => {
 const deleteMenuItem = async (req, res) => {
   try {
     const menuItem = await MenuItem.findByIdAndDelete(req.params.id);
-    
+
     if (!menuItem) {
       return res.status(404).json({ error: 'Menu item not found' });
     }
-    
+
     res.json({ message: 'Menu item deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });

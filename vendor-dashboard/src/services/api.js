@@ -1,6 +1,14 @@
 import axios from 'axios';
 
-const API_URL = (import.meta.env.VITE_API_URL || '') + '/api';
+const getBaseUrl = () => {
+  let url = import.meta.env.VITE_API_URL || '';
+  if (url.endsWith('/api')) {
+    url = url.slice(0, -4);
+  }
+  return url + '/api';
+};
+
+const API_URL = getBaseUrl();
 
 const api = axios.create({
   baseURL: API_URL,
@@ -35,7 +43,7 @@ export const vendorAPI = {
 // Menu APIs
 export const menuAPI = {
   create: (data) => api.post('/menu', data),
-  getByVendor: (vendorId) => api.get(`/menu/vendor/${vendorId}`),
+  getByVendor: (vendorId) => api.get(`/menu/vendor/${vendorId}?includeUnavailable=true`),
   update: (id, data) => api.put(`/menu/${id}`, data),
   delete: (id) => api.delete(`/menu/${id}`),
 };

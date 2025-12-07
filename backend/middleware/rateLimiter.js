@@ -23,7 +23,7 @@ const generalLimiter = rateLimit({
 // Strict Limiter: For sensitive routes (1000 requests per 15 minutes)
 const strictLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 1000,
+    max: 5000,
     skip: skipLocalhost, // Skip for localhost
     standardHeaders: true,
     legacyHeaders: false,

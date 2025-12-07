@@ -1,10 +1,18 @@
 import axios from 'axios';
 
 // Use environment variable for production, or relative path for local proxy
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+const getBaseUrl = () => {
+    let url = import.meta.env.VITE_API_URL || '';
+    if (url.endsWith('/api')) {
+        url = url.slice(0, -4);
+    }
+    return url + '/api';
+};
+
+const API_BASE_URL = getBaseUrl();
 
 const api = axios.create({
-    baseURL: `${API_BASE_URL}/api`,
+    baseURL: API_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
     },

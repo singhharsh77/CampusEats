@@ -17,7 +17,9 @@ const MenuPage = () => {
     category: 'lunch',
     preparationTime: 15,
     isAvailable: true,
+    imageUrl: '',
   });
+  const [imagePreview, setImagePreview] = useState('');
 
   useEffect(() => {
     if (vendor) {
@@ -46,7 +48,7 @@ const MenuPage = () => {
       const response = await menuAPI.getByVendor(currentVendorId);
       setMenuItems(response.data);
     } catch (error) {
-      toast.error('Failed to load menu');
+      toast.error('Failed to load menu: ' + (error.response?.data?.error || error.message));
     } finally {
       setLoading(false);
     }
@@ -88,6 +90,22 @@ const MenuPage = () => {
     }
   };
 
+  const handleToggleAvailability = async (item) => {
+    try {
+      const updatedItem = { ...item, isAvailable: !item.isAvailable };
+      await menuAPI.update(item._id, updatedItem);
+
+      // Optimistic update
+      setMenuItems(menuItems.map(i =>
+        i._id === item._id ? updatedItem : i
+      ));
+
+      toast.success(`${item.name} is now ${updatedItem.isAvailable ? 'Available' : 'Unavailable'}`);
+    } catch (error) {
+      toast.error('Failed to update status');
+    }
+  };
+
   const handleEdit = (item) => {
     setEditingItem(item);
     setFormData({
@@ -97,7 +115,9 @@ const MenuPage = () => {
       category: item.category,
       preparationTime: item.preparationTime,
       isAvailable: item.isAvailable,
+      imageUrl: item.imageUrl || '',
     });
+    setImagePreview(item.imageUrl || '');
     setShowModal(true);
   };
 
@@ -111,7 +131,34 @@ const MenuPage = () => {
       category: 'lunch',
       preparationTime: 15,
       isAvailable: true,
+      imageUrl: '',
     });
+    setImagePreview('');
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image size should be less than 5MB');
+        return;
+      }
+
+      // Convert to base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result;
+        setFormData({ ...formData, imageUrl: base64String });
+        setImagePreview(base64String);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageUrlChange = (url) => {
+    setFormData({ ...formData, imageUrl: url });
+    setImagePreview(url);
   };
 
   const categories = ['breakfast', 'lunch', 'snacks', 'beverages', 'dinner'];
@@ -157,10 +204,10 @@ const MenuPage = () => {
           {menuItems.map((item) => (
             <div
               key={item._id}
-              className={`bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition ${!item.isAvailable ? 'opacity-60' : ''
+              className={`bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition ${!item.isAvailable ? 'opacity-75 bg-gray-50' : ''
                 }`}
             >
-              <div className="h-32 bg-gradient-to-br from-orange-200 to-red-200 flex items-center justify-center">
+              <div className="h-32 bg-gradient-to-br from-orange-200 to-red-200 flex items-center justify-center relative">
                 {item.imageUrl ? (
                   <img
                     src={item.imageUrl}
@@ -170,6 +217,19 @@ const MenuPage = () => {
                 ) : (
                   <span className="text-4xl">🍽️</span>
                 )}
+
+                {/* Availability Toggle Overlay */}
+                <div className="absolute top-2 right-2">
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={item.isAvailable}
+                      onChange={() => handleToggleAvailability(item)}
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                  </label>
+                </div>
               </div>
 
               <div className="p-4">
@@ -180,14 +240,6 @@ const MenuPage = () => {
                       {item.description}
                     </p>
                   </div>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-semibold ${item.isAvailable
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                      }`}
-                  >
-                    {item.isAvailable ? 'Available' : 'Unavailable'}
-                  </span>
                 </div>
 
                 <div className="flex items-center justify-between mb-4">
@@ -315,6 +367,72 @@ const MenuPage = () => {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              {/* Image Upload Section */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Food Image
+                </label>
+
+                {/* Image Preview */}
+                {imagePreview && (
+                  <div className="mb-3 relative">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-32 object-cover rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData({ ...formData, imageUrl: '' });
+                        setImagePreview('');
+                      }}
+                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                {/* File Upload */}
+                <div className="mb-3">
+                  <label className="block w-full">
+                    <div className="flex items-center justify-center w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-orange-500 transition">
+                      <div className="text-center">
+                        <Plus className="w-6 h-6 mx-auto mb-1 text-gray-400" />
+                        <span className="text-sm text-gray-600">Upload Image</span>
+                        <p className="text-xs text-gray-500 mt-1">Max 5MB</p>
+                      </div>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+
+                {/* OR Divider */}
+                <div className="relative mb-3">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">OR</span>
+                  </div>
+                </div>
+
+                {/* Image URL Input */}
+                <input
+                  type="url"
+                  value={formData.imageUrl.startsWith('data:') ? '' : formData.imageUrl}
+                  onChange={(e) => handleImageUrlChange(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  placeholder="Paste image URL"
+                />
               </div>
 
               <div className="flex items-center gap-2">

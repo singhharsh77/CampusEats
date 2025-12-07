@@ -143,6 +143,7 @@ const DashboardPage = () => {
         />
       </div>
 
+
       {/* Recent Orders */}
       <div className="bg-white rounded-xl shadow-md p-6">
         <h2 className="text-xl font-bold text-gray-800 mb-4">Recent Orders</h2>
@@ -171,12 +172,12 @@ const DashboardPage = () => {
                   <p className="font-bold text-gray-800">₹{order.totalAmount}</p>
                   <span
                     className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${order.status === 'pending'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : order.status === 'preparing'
-                          ? 'bg-orange-100 text-orange-800'
-                          : order.status === 'ready'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : order.status === 'preparing'
+                        ? 'bg-orange-100 text-orange-800'
+                        : order.status === 'ready'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800'
                       }`}
                   >
                     {order.status}

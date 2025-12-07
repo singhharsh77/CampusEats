@@ -1,26 +1,91 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { orderAPI } from '../services/api';
 import toast from 'react-hot-toast';
-import { Package, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Package, Clock, CheckCircle, XCircle, Volume2, VolumeX } from 'lucide-react';
 
 const OrdersPage = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Tracking refs
+  const audioEnabledRef = useRef(false);
+  const prevOrdersRef = useRef([]);
+
   useEffect(() => {
     fetchOrders();
+
+    // Poll for updates every 10 seconds
+    const interval = setInterval(fetchOrders, 10000);
+    return () => clearInterval(interval);
   }, []);
+
+  // Audio notification state
+  const [audioEnabled, setAudioEnabled] = useState(() => {
+    const saved = localStorage.getItem('studentAudioEnabled');
+    return saved !== 'false'; // Default to true
+  });
+
+  useEffect(() => {
+    audioEnabledRef.current = audioEnabled;
+  }, [audioEnabled]);
+
+  const toggleAudio = () => {
+    const newAudioState = !audioEnabled;
+    setAudioEnabled(newAudioState);
+    localStorage.setItem('studentAudioEnabled', newAudioState.toString());
+
+    if (newAudioState) {
+      const utterance = new SpeechSynthesisUtterance('Audio notifications enabled');
+      window.speechSynthesis.speak(utterance);
+      toast.success('Audio notifications enabled');
+    } else {
+      toast.success('Audio notifications disabled');
+    }
+  };
 
   const fetchOrders = async () => {
     try {
       const response = await orderAPI.getMyOrders();
-      setOrders(response.data);
+      const newOrders = response.data;
+
+      // Check for status changes to play audio
+      if (prevOrdersRef.current.length > 0 && audioEnabledRef.current) {
+        newOrders.forEach(newOrder => {
+          const oldOrder = prevOrdersRef.current.find(o => o._id === newOrder._id);
+          if (oldOrder && oldOrder.status !== newOrder.status) {
+            // Status changed!
+            if (['confirmed', 'preparing', 'ready'].includes(newOrder.status)) {
+              speakStatusUpdate(newOrder);
+            }
+          }
+        });
+      }
+
+      setOrders(newOrders);
+      prevOrdersRef.current = newOrders;
     } catch (error) {
-      toast.error('Failed to load orders');
+      // toast.error('Failed to load orders'); // Suppress to avoid spamming on poll fail
+      console.error('Poll failed', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const speakStatusUpdate = (order) => {
+    if (!window.speechSynthesis) return;
+
+    let text = '';
+    if (order.status === 'confirmed') text = `Your order has been confirmed.`;
+    if (order.status === 'preparing') text = `Your order at ${order.vendorId?.name} is being prepared.`;
+    if (order.status === 'ready') text = `Your order at ${order.vendorId?.name} is ready for pickup!`;
+
+    if (text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.cancel(); // Stop overlap
+      window.speechSynthesis.speak(utterance);
+      toast(`🔊 ${text}`, { icon: '🔔' });
     }
   };
 
@@ -71,14 +136,31 @@ const OrdersPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">My Orders</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">My Orders</h1>
+
+          {/* Audio Toggle Button */}
+          <button
+            onClick={toggleAudio}
+            className={`p-3 rounded-full transition-colors ${audioEnabled ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-600'
+              }`}
+            title={audioEnabled ? "Mute Audio" : "Enable Audio"}
+          >
+            {audioEnabled ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
+          </button>
+        </div>
 
         <div className="space-y-4">
           {orders.map((order) => (
             <div
               key={order._id}
               onClick={() => navigate(`/orders/${order._id}`)}
-              className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer p-6"
+              className="bg-white shadow-md hover:shadow-lg transition-all cursor-pointer p-6"
+              style={{
+                border: '1px solid #e5e7eb',
+                borderRadius: '9px',
+                margin: '1px 4px 9px 0px'
+              }}
             >
               <div className="flex items-start justify-between mb-4">
                 <div>

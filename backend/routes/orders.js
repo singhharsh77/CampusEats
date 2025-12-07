@@ -1,13 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const { 
-  createOrder, 
-  getMyOrders, 
-  getOrderById, 
-  getVendorOrders, 
-  updateOrderStatus 
+const {
+  createOrder,
+  getMyOrders,
+  getOrderById,
+  getVendorOrders,
+  updateOrderStatus,
+  getVendorLiveOrderCount
 } = require('../controllers/orderController');
 const { auth, isVendor } = require('../middleware/auth');
+
+// Public route - no auth required
+router.get('/vendor/:vendorId/live-count', getVendorLiveOrderCount);
 
 router.post('/', auth, createOrder);
 router.get('/my-orders', auth, getMyOrders);

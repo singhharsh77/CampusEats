@@ -165,15 +165,6 @@ const OrdersPage = () => {
           >
             {audioEnabled ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
           </button>
-
-          {audioEnabled && (
-            <button
-              onClick={playNotificationSound}
-              className="flex items-center gap-1 text-xs bg-orange-100 text-orange-600 px-3 py-1 rounded-full hover:bg-orange-200 ml-2"
-            >
-              <Play className="w-4 h-4" /> Test
-            </button>
-          )}
         </div>
 
         <div className="space-y-4">

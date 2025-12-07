@@ -128,7 +128,6 @@ const OrdersPage = () => {
       audioRef.current.currentTime = 0;
       audioRef.current.play().catch(e => {
         console.error('Audio play failed:', e);
-        toast.error('Tap "Test Audio" to unlock sound');
       });
     } catch (error) {
       console.error('Audio error:', error);
@@ -215,23 +214,6 @@ const OrdersPage = () => {
             title={audioEnabled ? "Mute Audio" : "Enable Audio"}
           >
             {audioEnabled ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
-          </button>
-
-          <button
-            onClick={() => {
-              if (!audioEnabled) {
-                toast.error('Enable audio first to test!');
-                return;
-              }
-              playNotificationSound();
-            }}
-            className={`flex items-center gap-1 text-xs px-3 py-1 rounded-full transition-colors ${audioEnabled
-                ? 'bg-orange-100 text-orange-600 hover:bg-orange-200'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }`}
-            title="Test Audio Sound"
-          >
-            <Play className="w-4 h-4" /> Test
           </button>
 
           <button

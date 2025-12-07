@@ -197,16 +197,6 @@ const OrderDetailsPage = () => {
                 Ready for Pickup!
               </div>
             )}
-
-            {/* Test Audio Button (only if audio enabled) */}
-            {audioEnabled && (
-              <button
-                onClick={playNotificationSound}
-                className="flex items-center gap-1 text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full hover:bg-orange-200"
-              >
-                <Play className="w-3 h-3" /> Test Audio
-              </button>
-            )}
           </div>
 
           {/* Status Timeline */}
